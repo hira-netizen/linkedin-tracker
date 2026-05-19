@@ -13,7 +13,7 @@
       --text:#e8edf5;--text2:#7a8fa8;--text3:#3d4f63;
       --accent:#3b82f6;--green:#10b981;--amber:#f59e0b;
       --pink:#ec4899;--purple:#8b5cf6;--red:#ef4444;
-      --li:#0077b5;--ig:#e1306c;--fb:#7c3aed;
+      --li:#004182;--ig:#e1306c;--fb:#7c3aed;
     }
     body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh}
 
@@ -84,7 +84,7 @@
     .url-input::placeholder{color:var(--text3)}
     .url-input.err{border-color:var(--red)}
     .source-detected{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--text3);min-width:150px;display:flex;align-items:center;gap:7px;user-select:none;flex-shrink:0}
-    .source-detected.li{border-color:var(--li);color:var(--li);background:#0077b511}
+    .source-detected.li{border-color:var(--li);color:var(--li);background:#00418211}
     .source-detected.ig{border-color:var(--ig);color:var(--ig);background:#e1306c11}
     .source-detected.fb{border-color:var(--fb);color:var(--fb);background:#7c3aed11}
     .field-input{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;outline:none;transition:border .2s;font-family:'Outfit',sans-serif}
@@ -112,7 +112,7 @@
     .src-pill{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:transparent;transition:all .15s}
     .src-pill:hover{border-color:var(--border2);color:var(--text2)}
     .src-pill.active-all{background:var(--surface2);border-color:var(--border2);color:var(--text)}
-    .src-pill.active-li{background:#0077b522;border-color:var(--li);color:var(--li)}
+    .src-pill.active-li{background:#00418222;border-color:var(--li);color:var(--li)}
     .src-pill.active-ig{background:#e1306c22;border-color:var(--ig);color:var(--ig)}
     .src-pill.active-fb{background:#7c3aed22;border-color:var(--fb);color:var(--fb)}
 
@@ -120,7 +120,7 @@
     .cards{display:flex;flex-direction:column;gap:10px}
     .card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:14px;padding:16px 18px;animation:fadeIn .25s ease;transition:filter .2s}
     .card:hover{filter:brightness(1.04)}
-    .card.src-LinkedIn{border-left-color:var(--li);background:linear-gradient(135deg,#0077b510 0%,var(--surface) 60%)}
+    .card.src-LinkedIn{border-left-color:var(--li);background:linear-gradient(135deg,#00418210 0%,var(--surface) 60%)}
     .card.src-Instagram{border-left-color:var(--ig);background:linear-gradient(135deg,#e1306c10 0%,var(--surface) 60%)}
     .card.src-Facebook{border-left-color:var(--fb);background:linear-gradient(135deg,#7c3aed10 0%,var(--surface) 60%)}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -145,7 +145,7 @@
 
     /* SOURCE BADGE */
     .source-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600}
-    .src-li{background:#0077b522;color:var(--li)}
+    .src-li{background:#00418222;color:var(--li)}
     .src-ig{background:#e1306c22;color:var(--ig)}
     .src-fb{background:#7c3aed22;color:var(--fb)}
 
@@ -279,85 +279,160 @@
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
+    var data = JSON.parse(e.postData.contents || '{}');
 
-    if (sheet.getLastRow() === 0) setupSheet(sheet);
+    setupOrUpdateSheet(sheet);
 
-    // Duplicate check by name
-    var lastRow = sheet.getLastRow();
-    if (lastRow > 1) {
-      var names = sheet.getRange(2,1,lastRow-1,1).getValues();
-      for (var i=0; i<names.length; i++) {
-        if (names[i][0].toString().toLowerCase().trim()===data.name.toLowerCase().trim()) {
-          return ContentService.createTextOutput(JSON.stringify({success:false,duplicate:true})).setMimeType(ContentService.MimeType.JSON);
-        }
-      }
-    }
+    var rowNum = findExistingLeadRow(sheet, data);
+    if (!rowNum) rowNum = sheet.getLastRow() + 1;
 
-    // Columns: A=Name, B=Job Title, C=Niche,
-    // D=Source, E=Profile URL, F=Status,
-    // G=Date of Engagement, H=Follow Up 1,
-    // I=Final Follow Up, J=Outcome,
-    // K=DM Message, L=Notes
-    var newRow = sheet.getLastRow() + 1;
-    sheet.appendRow([
-      data.name||'', data.jobTitle||'', data.niche||'',
-      data.source||'LinkedIn', data.url||'',
-      data.status||'Lead Added', data.dateEngaged||'',
-      data.followUp1||'', data.finalFollowUp||'',
-      data.outcome||'', data.dm||'', data.notes||''
-    ]);
+    var nextReminder = getNextReminder(data);
 
-    formatRow(sheet, newRow, data.source);
+    writeByHeader(sheet, rowNum, {
+      'Name': data.name || '',
+      'Job Title': data.jobTitle || '',
+      'Niche / Expertise': data.niche || '',
+      'Source': data.source || 'LinkedIn',
+      'Profile URL': data.url || '',
+      'Status': data.status || 'Lead Added',
+      'Date of Engagement': data.dateEngaged || '',
+      'Follow Up 1': data.followUp1 || '',
+      'Final Follow Up': data.finalFollowUp || '',
+      'Outcome': data.outcome || '',
+      'DM Message': data.dm || '',
+      'Notes': data.notes || '',
+      'Last Updated': new Date(),
+      'Next Reminder': nextReminder
+    });
+
+    formatRow(sheet, rowNum, data.source || 'LinkedIn');
     formatWholeSheet(sheet);
+    applyDropdowns(sheet);
 
-    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({success:true,row:rowNum})).setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
     return ContentService.createTextOutput(JSON.stringify({success:false,error:err.toString()})).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function setupSheet(sheet) {
-  var headers = ['Name','Job Title','Niche / Expertise','Source',
-    'Profile URL','Status','Date of Engagement',
-    'Follow Up 1','Final Follow Up','Outcome','DM Message','Notes'];
-  sheet.appendRow(headers);
-  var hr = sheet.getRange(1,1,1,12);
-  hr.setBackground('#1a1a2e').setFontColor('#ffffff')
+function setupOrUpdateSheet(sheet) {
+  var headers = ['Name','Job Title','Niche / Expertise','Source','Profile URL','Status','Date of Engagement','Follow Up 1','Final Follow Up','Outcome','DM Message','Notes','Last Updated','Next Reminder'];
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+  } else {
+    var existing = sheet.getRange(1,1,1,Math.max(sheet.getLastColumn(),1)).getValues()[0];
+    headers.forEach(function(h) {
+      if (existing.indexOf(h) === -1) {
+        sheet.getRange(1, sheet.getLastColumn()+1).setValue(h);
+        existing.push(h);
+      }
+    });
+  }
+
+  var hr = sheet.getRange(1,1,1,sheet.getLastColumn());
+  hr.setBackground('#111827').setFontColor('#ffffff')
     .setFontWeight('bold').setFontSize(11)
     .setHorizontalAlignment('center');
   sheet.setFrozenRows(1);
   setColumnWidths(sheet);
+  applyDropdowns(sheet);
+}
+
+function headerMap(sheet) {
+  var headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+  var map = {};
+  headers.forEach(function(h,i){ map[h] = i+1; });
+  return map;
+}
+
+function writeByHeader(sheet, row, values) {
+  var map = headerMap(sheet);
+  Object.keys(values).forEach(function(key){
+    if (map[key]) sheet.getRange(row, map[key]).setValue(values[key]);
+  });
+}
+
+function findExistingLeadRow(sheet, data) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+  var map = headerMap(sheet);
+  var nameCol = map['Name'];
+  var urlCol = map['Profile URL'];
+  var rows = sheet.getRange(2,1,lastRow-1,sheet.getLastColumn()).getValues();
+  var incomingName = (data.name || '').toString().toLowerCase().trim();
+  var incomingUrl = (data.url || '').toString().toLowerCase().trim();
+
+  for (var i=0; i<rows.length; i++) {
+    var rowName = nameCol ? rows[i][nameCol-1].toString().toLowerCase().trim() : '';
+    var rowUrl = urlCol ? rows[i][urlCol-1].toString().toLowerCase().trim() : '';
+    if ((incomingUrl && rowUrl === incomingUrl) || (incomingName && rowName === incomingName)) return i + 2;
+  }
+  return null;
+}
+
+function applyDropdowns(sheet) {
+  var lastRow = Math.max(sheet.getMaxRows(), 200);
+  var map = headerMap(sheet);
+
+  if (map['Status']) {
+    var statusRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(['Lead Added','Engaged','Message Sent','Contact Later - 1 Week','Contact Later - 2 Weeks'], true)
+      .setAllowInvalid(false).build();
+    sheet.getRange(2, map['Status'], lastRow-1, 1).setDataValidation(statusRule);
+  }
+
+  if (map['Outcome']) {
+    var outcomeRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(['Call Booked','Not Interested','No Response','Keep Nurturing','Need to Contact Later'], true)
+      .setAllowInvalid(true).build();
+    sheet.getRange(2, map['Outcome'], lastRow-1, 1).setDataValidation(outcomeRule);
+  }
 }
 
 function setColumnWidths(sheet) {
-  var widths = [160,140,160,110,260,130,140,120,120,130,280,250];
+  var widths = [160,150,170,115,260,170,150,120,130,170,300,260,135,170];
   for (var i=0; i<widths.length; i++) sheet.setColumnWidth(i+1, widths[i]);
 }
 
 function formatRow(sheet, rowNum, source) {
-  var range = sheet.getRange(rowNum,1,1,12);
-  var bgColor='#ffffff', accentColor='#999999';
-  if (source==='LinkedIn')  { bgColor='#e8f4fb'; accentColor='#0077b5'; }
+  var lastCol = sheet.getLastColumn();
+  var range = sheet.getRange(rowNum,1,1,lastCol);
+  var bgColor='#ffffff', accentColor='#64748b';
+  if (source==='LinkedIn')  { bgColor='#dbeafe'; accentColor='#004182'; }
   if (source==='Instagram') { bgColor='#fce4ec'; accentColor='#e1306c'; }
   if (source==='Facebook')  { bgColor='#ede9fe'; accentColor='#7c3aed'; }
-  if (rowNum%2===0) bgColor=darken(bgColor,12);
+  if (rowNum%2===0) bgColor=darken(bgColor,10);
 
   range.setBackground(bgColor).setFontSize(10).setVerticalAlignment('middle');
   sheet.getRange(rowNum,1).setFontWeight('bold').setFontSize(11);
-  sheet.getRange(rowNum,4).setBackground(accentColor).setFontColor('#ffffff')
-    .setFontWeight('bold').setHorizontalAlignment('center');
-  sheet.getRange(rowNum,5).setFontColor('#0077b5');
-  sheet.getRange(rowNum,11).setWrap(true);
-  sheet.getRange(rowNum,12).setWrap(true);
-  range.setBorder(true,true,true,true,false,false,'#cccccc',SpreadsheetApp.BorderStyle.SOLID);
+
+  var map = headerMap(sheet);
+  if (map['Source']) sheet.getRange(rowNum,map['Source']).setBackground(accentColor).setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
+  if (map['Profile URL']) sheet.getRange(rowNum,map['Profile URL']).setFontColor('#004182');
+  if (map['DM Message']) sheet.getRange(rowNum,map['DM Message']).setWrap(true);
+  if (map['Notes']) sheet.getRange(rowNum,map['Notes']).setWrap(true);
+  range.setBorder(true,true,true,true,false,false,'#cbd5e1',SpreadsheetApp.BorderStyle.SOLID);
 }
 
 function formatWholeSheet(sheet) {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
-  var sources = sheet.getRange(2,4,lastRow-1,1).getValues();
+  var map = headerMap(sheet);
+  var sourceCol = map['Source'];
+  if (!sourceCol) return;
+  var sources = sheet.getRange(2,sourceCol,lastRow-1,1).getValues();
   for (var i=0; i<sources.length; i++) formatRow(sheet, i+2, sources[i][0]);
+}
+
+function getNextReminder(data) {
+  var status = data.status || '';
+  if (status === 'Message Sent' && !data.followUp1) return 'Follow up after 3 days';
+  if (data.followUp1 && !data.finalFollowUp && !data.outcome) return 'Final follow up after 5 days';
+  if (data.finalFollowUp && !data.outcome) return 'Mark outcome after 5 days';
+  if (status === 'Contact Later - 1 Week') return 'Contact again after 1 week';
+  if (status === 'Contact Later - 2 Weeks') return 'Contact again after 2 weeks';
+  return '';
 }
 
 function darken(hex,amount) {
@@ -365,7 +440,7 @@ function darken(hex,amount) {
   var g=parseInt(hex.slice(3,5),16);
   var b=parseInt(hex.slice(5,7),16);
   r=Math.max(0,r-amount); g=Math.max(0,g-amount); b=Math.max(0,b-amount);
-  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  return '#'+[r,g,b].map(function(x){return x.toString(16).padStart(2,'0');}).join('');
 }</pre>
       <button class="copy-btn" onclick="copyScript()">Copy</button>
     </div>
@@ -422,18 +497,20 @@ function darken(hex,amount) {
 const SK='lt_v6', WK='lt_wh', NOTIF_KEY='lt_notif_dismissed';
 
 const STATUSES=[
-  {val:'Lead Added',    label:'📋 Lead Added',    cls:'s-added'},
-  {val:'Engaged',       label:'💬 Engaged',        cls:'s-engaged'},
-  {val:'Message Sent',  label:'✉️ Message Sent',   cls:'s-sent'},
-  {val:'Contact Later', label:'📅 Contact Later',  cls:'s-later'},
+  {val:'Lead Added',             label:'📋 Lead Added',             cls:'s-added'},
+  {val:'Engaged',                label:'💬 Engaged',                cls:'s-engaged'},
+  {val:'Message Sent',           label:'✉️ Message Sent',           cls:'s-sent'},
+  {val:'Contact Later - 1 Week', label:'📅 Contact Later - 1 Week', cls:'s-later'},
+  {val:'Contact Later - 2 Weeks',label:'📅 Contact Later - 2 Weeks',cls:'s-later'},
 ];
 
 const OUTCOMES=[
-  {val:'',               label:'— Select Outcome —'},
-  {val:'Call Booked',    label:'📞 Call Booked'},
-  {val:'Not Interested', label:'❌ Not Interested'},
-  {val:'No Response',    label:'👻 No Response'},
-  {val:'Keep Nurturing', label:'🔄 Keep Nurturing'},
+  {val:'',                       label:'— Select Outcome —'},
+  {val:'Call Booked',            label:'📞 Call Booked'},
+  {val:'Not Interested',         label:'❌ Not Interested'},
+  {val:'No Response',            label:'👻 No Response'},
+  {val:'Keep Nurturing',         label:'🔄 Keep Nurturing'},
+  {val:'Need to Contact Later',  label:'📅 Need to Contact Later'},
 ];
 
 const REPLY_OPTS=['','Yes','Call Booked','No'];
@@ -519,9 +596,9 @@ function showMsg(text,type,ms=4000){
   if(ms)setTimeout(()=>{el.style.display='none';},ms);
 }
 
-async function syncToSheet(p){
+async function syncToSheet(p,silent=false){
   if(!webhook)return;
-  showMsg('⟳ Syncing to Google Sheet...','info',0);
+  if(!silent)showMsg('⟳ Syncing to Google Sheet...','info',0);
   try{
     await fetch(webhook,{
       method:'POST',mode:'no-cors',
@@ -529,13 +606,13 @@ async function syncToSheet(p){
       body:JSON.stringify({
         name:p.name,jobTitle:p.jobTitle,niche:p.niche,
         source:p.source,url:p.url,status:p.status,
-        dateEngaged:p.dateEngaged,followUp1:p.followUp1,
+        dateEngaged:p.dateEngaged,statusDate:p.statusDate,followUp1:p.followUp1,
         finalFollowUp:p.finalFollowUp,outcome:p.outcome,
         dm:p.dm,notes:p.notes
       })
     });
-    showMsg('✓ Added to your Google Sheet','ok');
-  }catch{showMsg('⚠ Saved locally — could not sync','err');}
+    if(!silent)showMsg('✓ Synced to your Google Sheet','ok');
+  }catch{if(!silent)showMsg('⚠ Saved locally — could not sync','err');}
 }
 
 function addProspect(){
@@ -552,7 +629,7 @@ function addProspect(){
   }
   const p={
     id:Date.now(),url,name,jobTitle:titleVal,niche:nicheVal,source:src,
-    status:'Lead Added',dateEngaged:today(),
+    status:'Lead Added',dateEngaged:today(),statusDate:'',
     followUp1:'',finalFollowUp:'',outcome:'',dm:'',notes:''
   };
   prospects.unshift(p);save();syncToSheet(p);
@@ -566,8 +643,21 @@ function addProspect(){
 }
 
 function upd(id,field,val){
-  prospects=prospects.map(p=>p.id===id?{...p,[field]:val}:p);
-  save();ed=null;render();checkReminders();
+  prospects=prospects.map(p=>{
+    if(p.id!==id)return p;
+    const updated={...p,[field]:val};
+    if(field==='status'){
+      updated.statusDate=today();
+      // If you mark the message as sent, reminders count from this date.
+      // The visible/sheet date still stays as Date of Engagement.
+      if(val!=='Message Sent') updated.followUp1=p.followUp1||'';
+    }
+    return updated;
+  });
+  save();
+  const changed=prospects.find(p=>p.id===id);
+  if(changed) syncToSheet(changed,true);
+  ed=null;render();checkReminders();
 }
 
 function markFU(id,field){upd(id,field,today());}
@@ -619,8 +709,8 @@ function checkReminders(){
 
     // After Message Sent → 3 days → follow up 1 reminder
     if(p.status==='Message Sent'&&!p.followUp1){
-      const days=daysBetween(p.dateEngaged);
-      if(days>=3){
+      const days=daysBetween(p.statusDate||p.dateEngaged);
+      if(days!==null&&days>=3){
         reminders.push({
           id:p.id,name:p.name,
           msg:`Message sent ${days} day${days!==1?'s':''} ago — time for Follow Up 1!`,
@@ -653,14 +743,15 @@ function checkReminders(){
       }
     }
 
-    // Contact Later → remind after 7 days
-    if(p.status==='Contact Later'){
-      const days=daysBetween(p.dateEngaged);
-      if(days>=7){
+    // Contact Later → remind after 1 week or 2 weeks
+    if(p.status==='Contact Later - 1 Week'||p.status==='Contact Later - 2 Weeks'){
+      const waitDays=p.status==='Contact Later - 2 Weeks'?14:7;
+      const days=daysBetween(p.statusDate||p.dateEngaged);
+      if(days!==null&&days>=waitDays){
         reminders.push({
           id:p.id,name:p.name,
-          msg:`Marked "Contact Later" ${days} days ago — time to reach out!`,
-          urgent:days>=14,field:'status'
+          msg:`Marked "${p.status}" ${days} days ago — time to reach out!`,
+          urgent:days>=waitDays+3,field:'status'
         });
       }
     }
@@ -741,7 +832,7 @@ function getFiltered(){
   let list=[...prospects];
   if(srcFilter!=='All')list=list.filter(p=>p.source===srcFilter);
   if(statusFilter==='All')return list;
-  if(statusFilter==='Needs Follow Up')return list.filter(p=>p.status==='Message Sent'&&!p.followUp1&&daysBetween(p.dateEngaged)>=3);
+  if(statusFilter==='Needs Follow Up')return list.filter(p=>p.status==='Message Sent'&&!p.followUp1&&daysBetween(p.statusDate||p.dateEngaged)>=3);
   return list.filter(p=>p.status===statusFilter);
 }
 
@@ -758,7 +849,7 @@ function renderAll(){
     sEl.style.display='flex';
     sEl.innerHTML=[
       {l:'Total',v:prospects.length,c:'#6366f1'},
-      {l:'LinkedIn',v:prospects.filter(p=>p.source==='LinkedIn').length,c:'#0077b5'},
+      {l:'LinkedIn',v:prospects.filter(p=>p.source==='LinkedIn').length,c:'#004182'},
       {l:'Instagram',v:prospects.filter(p=>p.source==='Instagram').length,c:'#e1306c'},
       {l:'Facebook',v:prospects.filter(p=>p.source==='Facebook').length,c:'#7c3aed'},
       {l:'Replied',v:prospects.filter(p=>p.replyStatus==='Yes').length,c:'#10b981'},
@@ -848,7 +939,7 @@ function cardHtml(p){
   const isEd=f=>ed?.id===p.id&&ed?.field===f;
   const profileLabel=p.url?p.url.replace('https://www.','').replace('www.','').substring(0,55):'';
 
-  const needsFU1=p.status==='Message Sent'&&!p.followUp1&&(daysBetween(p.dateEngaged)||0)>=3;
+  const needsFU1=p.status==='Message Sent'&&!p.followUp1&&(daysBetween(p.statusDate||p.dateEngaged)||0)>=3;
   const needsFUFinal=p.followUp1&&!p.finalFollowUp&&!p.outcome&&(daysBetween(p.followUp1)||0)>=5;
 
   const nameHtml=isEd('name')?ie(p.id,'name',p.name,'sm')
@@ -862,7 +953,7 @@ function cardHtml(p){
   const statusCls=STATUSES.find(s=>s.val===p.status)?.cls||'s-added';
 
   const outcomeOpts=OUTCOMES.map(o=>`<option value="${o.val}" ${p.outcome===o.val?'selected':''}>${o.label}</option>`).join('');
-  const outcomeCls=p.outcome==='Call Booked'?'o-call':p.outcome==='Not Interested'?'o-notint':p.outcome==='No Response'?'o-noresp':p.outcome==='Keep Nurturing'?'o-nurture':'';
+  const outcomeCls=p.outcome==='Call Booked'?'o-call':p.outcome==='Not Interested'?'o-notint':p.outcome==='No Response'?'o-noresp':p.outcome==='Keep Nurturing'?'o-nurture':p.outcome==='Need to Contact Later'?'o-nurture':'';
 
   const fu1Html=p.followUp1
     ?`<button class="fu-btn done">✓ Follow Up 1: ${p.followUp1}</button>`
