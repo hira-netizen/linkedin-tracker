@@ -1,139 +1,928 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Leads Tracker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #07090f; --surface: #0d1120; --surface2: #111827;
-      --border: #1a2436; --border2: #243044;
-      --text: #e8edf5; --text2: #7a8fa8; --text3: #3d4f63;
-      --accent: #3b82f6; --green: #10b981; --amber: #f59e0b;
-      --pink: #ec4899; --purple: #8b5cf6; --red: #ef4444;
-      --orange: #f97316; --li: #0077b5; --ig: #e1306c; --fb: #7c3aed;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07090f;--surface:#0d1120;--surface2:#111827;
+      --border:#1a2436;--border2:#243044;
+      --text:#e8edf5;--text2:#7a8fa8;--text3:#3d4f63;
+      --accent:#3b82f6;--green:#10b981;--amber:#f59e0b;
+      --pink:#ec4899;--purple:#8b5cf6;--red:#ef4444;
+      --li:#0077b5;--ig:#e1306c;--fb:#7c3aed;
     }
-    body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; }
+    body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh}
 
-    header { background: linear-gradient(180deg,#0d1525 0%,#07090f 100%); border-bottom: 1px solid var(--border); padding: 18px 28px; position: sticky; top: 0; z-index: 100; }
-    .header-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-icon { width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,#6366f1,#ec4899); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
-    h1 { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
-    h1 span { color: var(--accent); }
-    .header-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-    .sheets-badge { display: flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 12px; color: var(--text2); cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-    .sheets-badge:hover { border-color: var(--accent); }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); transition: all 0.3s; }
-    .sheets-badge.connected .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    /* HEADER */
+    header{background:linear-gradient(180deg,#0d1525 0%,#07090f 100%);border-bottom:1px solid var(--border);padding:18px 28px;position:sticky;top:0;z-index:200}
+    .header-inner{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    h1{font-family:'Space Mono',monospace;font-size:16px;font-weight:700}
+    h1 span{color:var(--accent)}
+    .header-sub{font-size:11px;color:var(--text3);margin-top:1px}
+    .sheets-badge{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap}
+    .sheets-badge:hover{border-color:var(--accent)}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--text3);transition:all .3s}
+    .sheets-badge.connected .dot{background:var(--green);box-shadow:0 0 6px var(--green)}
 
-    /* REMINDER BANNERS */
-    .reminder-area { max-width: 1000px; margin: 14px auto 0; padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
-    .rbox { border-radius: 12px; padding: 11px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: opacity 0.2s; }
-    .rbox:hover { opacity: 0.9; }
-    .rbox.r-fu1   { background: linear-gradient(135deg,#f97316,#ef4444); }
-    .rbox.r-final { background: linear-gradient(135deg,#8b5cf6,#ec4899); }
-    .rbox .r-text { flex: 1; }
-    .rbox .r-title { font-size: 13px; font-weight: 600; color: #fff; }
-    .rbox .r-names { font-size: 11px; color: rgba(255,255,255,.8); margin-top: 2px; }
-    .rbox .r-badge { background: rgba(255,255,255,.25); color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    /* NOTIFICATIONS BANNER */
+    .notif-banner{max-width:1000px;margin:16px auto 0;padding:0 20px;display:none}
+    .notif-banner.show{display:block}
+    .notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .notif-title{font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+    .notif-dismiss{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none}
+    .notif-dismiss:hover{color:var(--text2)}
+    .notif-cards{display:flex;flex-direction:column;gap:6px}
+    .notif-card{background:#1c1500;border:1px solid #f59e0b44;border-left:3px solid var(--amber);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px}
+    .notif-card.urgent{background:#1c0000;border-color:#ef444444;border-left-color:var(--red)}
+    .notif-name{font-weight:600;color:var(--text)}
+    .notif-msg{color:var(--text2);font-size:12px}
+    .notif-action{background:var(--amber);border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:#000;cursor:pointer;white-space:nowrap}
+    .notif-action.urgent{background:var(--red);color:#fff}
 
-    .main-tabs { max-width: 1000px; margin: 0 auto; padding: 18px 20px 0; display: flex; gap: 4px; border-bottom: 1px solid var(--border); }
-    .main-tab { padding: 9px 20px; font-size: 13px; font-weight: 500; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; margin-bottom: -1px; }
-    .main-tab:hover { color: var(--text2); }
-    .main-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+    /* TABS */
+    .main-tabs{max-width:1000px;margin:0 auto;padding:20px 20px 0;display:flex;gap:4px;border-bottom:1px solid var(--border)}
+    .main-tab{padding:9px 20px;font-size:13px;font-weight:500;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px}
+    .main-tab:hover{color:var(--text2)}
+    .main-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+    .tab-badge{background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:4px;display:none}
+    .tab-badge.show{display:inline}
 
-    main { max-width: 1000px; margin: 0 auto; padding: 22px 20px; }
+    main{max-width:1000px;margin:0 auto;padding:24px 20px}
 
     /* CONFIG */
-    .config-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; display: none; }
-    .config-panel.open { display: block; }
-    .config-panel h3 { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 14px; }
-    .step { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
-    .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
-    .step code { background: var(--surface2); border: 1px solid var(--border2); border-radius: 4px; padding: 1px 6px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--pink); }
-    .script-box { background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 16px; margin: 14px 0; position: relative; }
-    .script-box pre { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text2); white-space: pre-wrap; word-break: break-all; line-height: 1.7; max-height: 220px; overflow-y: auto; }
-    .copy-btn { position: absolute; top: 10px; right: 10px; background: var(--border2); border: none; border-radius: 6px; padding: 4px 10px; color: var(--text2); font-size: 11px; cursor: pointer; transition: all 0.2s; }
-    .copy-btn:hover { background: var(--accent); color: #fff; }
-    .config-input-row { display: flex; gap: 10px; margin-top: 4px; }
-    .config-input { flex: 1; background: var(--bg); border: 1px solid var(--border2); border-radius: 9px; padding: 10px 14px; color: var(--text); font-size: 13px; font-family: 'Space Mono', monospace; outline: none; }
-    .config-input:focus { border-color: var(--accent); }
-    .config-input::placeholder { color: var(--text3); }
-    .btn-save-config { background: var(--accent); border: none; border-radius: 9px; padding: 10px 20px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .config-msg { font-size: 12px; margin-top: 8px; }
+    .config-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:20px;display:none}
+    .config-panel.open{display:block}
+    .config-panel h3{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+    .step{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:10px}
+    .step-num{width:22px;height:22px;border-radius:50%;background:var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px}
+    .step a{color:var(--accent);text-decoration:none}
+    .step code{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-family:'Space Mono',monospace;font-size:11px;color:var(--pink)}
+    .script-box{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin:14px 0;position:relative}
+    .script-box pre{font-family:'Space Mono',monospace;font-size:10px;color:var(--text2);white-space:pre-wrap;word-break:break-all;line-height:1.7;max-height:220px;overflow-y:auto}
+    .copy-btn{position:absolute;top:10px;right:10px;background:var(--border2);border:none;border-radius:6px;padding:4px 10px;color:var(--text2);font-size:11px;cursor:pointer;transition:all .2s}
+    .copy-btn:hover{background:var(--accent);color:#fff}
+    .config-input-row{display:flex;gap:10px;margin-top:4px}
+    .config-input{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:9px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'Space Mono',monospace;outline:none}
+    .config-input:focus{border-color:var(--accent)}
+    .config-input::placeholder{color:var(--text3)}
+    .btn-save-config{background:var(--accent);border:none;border-radius:9px;padding:10px 20px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .config-msg{font-size:12px;margin-top:8px}
 
     /* ADD FORM */
-    .add-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; margin-bottom: 20px; }
-    .add-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
-    .add-row { display: grid; gap: 10px; margin-bottom: 8px; }
-    .add-row.r1 { grid-template-columns: 1fr auto auto; }
-    .add-row.r2 { grid-template-columns: 1fr 1fr; }
-    .add-row.r3 { grid-template-columns: 1fr auto; }
-
-    .inp { background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; padding: 11px 14px; color: var(--text); font-size: 14px; outline: none; transition: border .2s; width: 100%; font-family: 'Outfit', sans-serif; }
-    .inp:focus { border-color: var(--accent); }
-    .inp::placeholder { color: var(--text3); }
-    .inp.sm { font-size: 13px; }
-    .inp.err { border-color: var(--red); }
-
-    /* bio paste box */
-    .bio-box { background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; padding: 10px 14px; color: var(--text2); font-size: 12px; outline: none; transition: border .2s; width: 100%; font-family: 'Outfit', sans-serif; resize: none; min-height: 56px; }
-    .bio-box:focus { border-color: var(--accent); }
-    .bio-box::placeholder { color: var(--text3); font-size: 12px; }
-    .bio-hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
-    /* source / detect badges */
-    .src-detect { background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; padding: 11px 14px; font-size: 13px; color: var(--text3); display: flex; align-items: center; gap: 7px; user-select: none; white-space: nowrap; }
-    .src-detect.li { border-color: var(--li); color: var(--li); background: #0077b511; }
-    .src-detect.ig { border-color: var(--ig); color: var(--ig); background: #e1306c11; }
-    .src-detect.fb { border-color: var(--fb); color: var(--fb); background: #1877f211; }
-
-    /* niche detected chip */
-    .niche-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: #8b5cf622; border: 1px solid var(--purple); border-radius: 20px; font-size: 12px; color: var(--purple); font-weight: 500; margin-top: 6px; }
-    .niche-chip .x { cursor: pointer; color: var(--text3); margin-left: 2px; }
-    .niche-chip .x:hover { color: var(--red); }
-
-    /* sel wrap */
-    .sel-wrap { position: relative; }
-    .sel-wrap select { background: var(--bg); border: 1px solid var(--border2); border-radius: 10px; padding: 11px 32px 11px 14px; color: var(--text); font-size: 13px; font-family: 'Outfit', sans-serif; outline: none; cursor: pointer; appearance: none; -webkit-appearance: none; width: 100%; transition: border .2s; }
-    .sel-wrap select:focus { border-color: var(--accent); }
-    .sel-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; font-size: 12px; }
-
-    .btn-add { background: linear-gradient(135deg,#6366f1,#8b5cf6); border: none; border-radius: 10px; padding: 11px 22px; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .2s; align-self: start; }
-    .btn-add:hover { opacity: .85; }
-    .msg { font-size: 12px; margin-top: 8px; }
-    .msg.err { color: var(--red); } .msg.ok { color: var(--green); } .msg.info { color: var(--accent); }
+    .add-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;margin-bottom:20px}
+    .add-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+    .add-row1{display:flex;gap:10px;margin-bottom:10px}
+    .add-row2{display:flex;gap:10px}
+    .url-input{flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:border .2s}
+    .url-input:focus{border-color:var(--accent)}
+    .url-input::placeholder{color:var(--text3)}
+    .url-input.err{border-color:var(--red)}
+    .source-detected{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--text3);min-width:150px;display:flex;align-items:center;gap:7px;user-select:none;flex-shrink:0}
+    .source-detected.li{border-color:var(--li);color:var(--li);background:#0077b511}
+    .source-detected.ig{border-color:var(--ig);color:var(--ig);background:#e1306c11}
+    .source-detected.fb{border-color:var(--fb);color:var(--fb);background:#7c3aed11}
+    .field-input{background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;outline:none;transition:border .2s;font-family:'Outfit',sans-serif}
+    .field-input:focus{border-color:var(--accent)}
+    .field-input::placeholder{color:var(--text3)}
+    .btn-add{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;padding:11px 22px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s;flex-shrink:0}
+    .btn-add:hover{opacity:.85}
+    .msg{font-size:12px;margin-top:8px}
+    .msg.err{color:var(--red)}
+    .msg.ok{color:var(--green)}
+    .msg.info{color:var(--accent)}
 
     /* STATS */
-    .stats { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
-    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 9px 16px; display: flex; align-items: center; gap: 7px; }
-    .stat-val { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; }
-    .stat-lbl { font-size: 11px; color: var(--text3); }
+    .stats{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+    .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 16px;display:flex;align-items:center;gap:7px}
+    .stat-val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700}
+    .stat-lbl{font-size:11px;color:var(--text3)}
 
-    /* FILTER ROWS */
-    .src-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-    .sp { display: flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); color: var(--text3); background: transparent; transition: all .15s; }
-    .sp:hover { border-color: var(--border2); color: var(--text2); }
-    .sp.a-all { background: var(--surface2); border-color: var(--border2); color: var(--text); }
-    .sp.a-li  { background: #0077b522; border-color: var(--li); color: var(--li); }
-    .sp.a-ig  { background: #e1306c22; border-color: var(--ig); color: var(--ig); }
-    .sp.a-fb  { background: #7c3aed22; border-color: #7c3aed; color: #7c3aed; }
-    .sf-row { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
-    .fbtn { background: transparent; border: 1px solid var(--border); border-radius: 8px; padding: 4px 11px; color: var(--text3); font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; }
-    .fbtn.active { background: var(--surface2); border-color: var(--border2); color: var(--text); }
-    .fbtn:hover { border-color: var(--border2); color: var(--text2); }
-    .fbtn.fu1-f  { border-color: var(--orange); color: var(--orange); }
-    .fbtn.fu1-f.active  { background: #f9731622; }
-    .fbtn.fin-f  { border-color: var(--purple); color: var(--purple); }
-    .fbtn.fin-f.active  { background: #8b5cf622; }
+    /* FILTERS */
+    .filter-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+    .filter-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-right:2px}
+    .fbtn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:4px 11px;color:var(--text3);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+    .fbtn.active{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+    .fbtn:hover{border-color:var(--border2);color:var(--text2)}
+    .src-pill{display:flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--text3);background:transparent;transition:all .15s}
+    .src-pill:hover{border-color:var(--border2);color:var(--text2)}
+    .src-pill.active-all{background:var(--surface2);border-color:var(--border2);color:var(--text)}
+    .src-pill.active-li{background:#0077b522;border-color:var(--li);color:var(--li)}
+    .src-pill.active-ig{background:#e1306c22;border-color:var(--ig);color:var(--ig)}
+    .src-pill.active-fb{background:#7c3aed22;border-color:var(--fb);color:var(--fb)}
 
-    /* BADGES */
-    .src-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 600; }
-    .b-li { background: #0077b522; color: var(--li); }
-    .b-ig { background: #e1306c22; color: var(--ig); }
-    .b-fb { background: #7c3aed22; color: #7c3aed; }
-    .eng-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-    .e-added    { background: #3d4f6322; color: var(--text3
+    /* CARDS */
+    .cards{display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:14px;padding:16px 18px;animation:fadeIn .25s ease;transition:filter .2s}
+    .card:hover{filter:brightness(1.04)}
+    .card.src-LinkedIn{border-left-color:var(--li);background:linear-gradient(135deg,#0077b510 0%,var(--surface) 60%)}
+    .card.src-Instagram{border-left-color:var(--ig);background:linear-gradient(135deg,#e1306c10 0%,var(--surface) 60%)}
+    .card.src-Facebook{border-left-color:var(--fb);background:linear-gradient(135deg,#7c3aed10 0%,var(--surface) 60%)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+    .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+    .person-row{display:flex;align-items:center;gap:10px}
+    .avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+    .person-info{flex:1}
+    .person-name{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;cursor:pointer}
+    .person-name:hover{color:var(--accent)}
+    .person-title{font-size:12px;color:var(--text2);margin-top:1px;cursor:pointer}
+    .person-title:hover{color:var(--text)}
+    .person-niche{font-size:11px;color:var(--text3);margin-top:1px;cursor:pointer}
+    .person-niche:hover{color:var(--text2)}
+    .profile-link{font-size:11px;color:var(--accent);text-decoration:none;display:block;margin-top:3px}
+    .profile-link:hover{text-decoration:underline}
+
+    .card-meta{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+    .card-date{font-size:11px;color:var(--text3)}
+    .btn-del{background:transparent;border:1px solid var(--border);border-radius:7px;padding:3px 9px;color:var(--text3);font-size:11px;cursor:pointer;transition:all .15s}
+    .btn-del:hover{border-color:var(--red);color:var(--red)}
+
+    /* SOURCE BADGE */
+    .source-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:5px;font-size:11px;font-weight:600}
+    .src-li{background:#0077b522;color:var(--li)}
+    .src-ig{background:#e1306c22;color:var(--ig)}
+    .src-fb{background:#7c3aed22;color:var(--fb)}
+
+    /* STATUS DROPDOWN */
+    .status-select{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;outline:none;font-family:'Outfit',sans-serif;transition:border .2s}
+    .status-select:focus{border-color:var(--accent)}
+    .status-select.s-added{border-color:#64748b;color:#94a3b8}
+    .status-select.s-engaged{border-color:var(--purple);color:var(--purple)}
+    .status-select.s-sent{border-color:var(--accent);color:var(--accent)}
+    .status-select.s-later{border-color:var(--amber);color:var(--amber)}
+
+    /* REPLY BADGE */
+    .reply-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+    .reply-none{background:var(--border);color:var(--text3)}
+    .reply-yes{background:#10b98122;color:var(--green);border-color:var(--green)}
+    .reply-call{background:#ec489922;color:var(--pink);border-color:var(--pink)}
+    .reply-no{background:#ef444422;color:var(--red);border-color:var(--red)}
+
+    /* OUTCOME DROPDOWN */
+    .outcome-select{background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;color:var(--text2);font-size:12px;cursor:pointer;outline:none;font-family:'Outfit',sans-serif}
+    .outcome-select.o-call{border-color:var(--green);color:var(--green)}
+    .outcome-select.o-notint{border-color:var(--red);color:var(--red)}
+    .outcome-select.o-noresp{border-color:var(--text3);color:var(--text3)}
+    .outcome-select.o-nurture{border-color:var(--amber);color:var(--amber)}
+
+    /* FOLLOW UP BUTTONS */
+    .fu-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .fu-btn{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 13px;font-size:12px;color:var(--text3);cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:5px}
+    .fu-btn:hover{border-color:var(--accent);color:var(--text2)}
+    .fu-btn.done{border-color:var(--green);color:var(--green);background:#10b98111}
+    .fu-btn.overdue{border-color:var(--red);color:var(--red);background:#ef444411;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+    /* FIELDS */
+    .section-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+    .dm-text{font-size:12px;color:var(--text3);padding:7px 11px;background:var(--bg);border-radius:8px;border:1px dashed var(--border);cursor:pointer;line-height:1.5;display:block;transition:border-color .2s}
+    .dm-text:hover{border-color:var(--border2);color:var(--text2)}
+    .dm-text.has-val{border-style:solid;color:var(--text2)}
+    .note-display{font-size:13px;color:var(--text3);cursor:pointer;padding:7px 11px;background:var(--bg);border-radius:8px;border:1px dashed var(--border);display:block;transition:border-color .2s}
+    .note-display:hover{border-color:var(--border2);color:var(--text2)}
+    .note-display.has-val{border-style:solid;color:var(--text2)}
+
+    /* INLINE EDIT */
+    .ie-wrap{display:flex;gap:6px;align-items:center}
+    .ie{background:var(--bg);border:1px solid var(--accent);border-radius:7px;padding:5px 10px;color:var(--text);font-size:13px;outline:none;font-family:'Outfit',sans-serif}
+    .ie.sm{width:180px}.ie.md{width:220px}.ie.lg{width:100%}
+    .btn-ok{background:var(--accent);border:none;border-radius:7px;padding:5px 10px;color:#fff;font-size:12px;cursor:pointer}
+    .btn-cx{background:var(--surface2);border:none;border-radius:7px;padding:5px 9px;color:var(--text2);font-size:12px;cursor:pointer}
+    .area-wrap{display:flex;flex-direction:column;gap:6px}
+    .ie-area{background:var(--bg);border:1px solid var(--accent);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;font-family:'Outfit',sans-serif;resize:vertical;width:100%}
+    .ie-actions{display:flex;gap:6px}
+
+    /* NICHE VIEW */
+    .niche-view{display:none}
+    .niche-view.visible{display:block}
+    .niche-group{margin-bottom:24px}
+    .niche-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .niche-title{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;color:var(--text)}
+    .niche-count{background:var(--border2);color:var(--text2);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:600}
+    .niche-mini-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;transition:border-color .15s}
+    .niche-mini-card:hover{border-color:var(--border2)}
+    .niche-mini-card.src-LinkedIn{border-left-color:var(--li)}
+    .niche-mini-card.src-Instagram{border-left-color:var(--ig)}
+    .niche-mini-card.src-Facebook{border-left-color:var(--fb)}
+    .niche-mini-left{display:flex;align-items:center;gap:10px}
+    .niche-avatar-sm{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+    .niche-name{font-size:14px;font-weight:500;color:var(--text)}
+    .niche-meta{font-size:11px;color:var(--text3);margin-top:1px}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:50px 20px}
+    .empty-icon{font-size:44px;margin-bottom:14px}
+    .empty h3{font-size:15px;color:var(--border2);margin-bottom:5px}
+    .empty p{font-size:13px;color:var(--text3)}
+
+    /* CARD GRID */
+    .card-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+
+    @media(max-width:640px){
+      header{padding:14px}
+      main{padding:16px 12px}
+      .main-tabs{padding:16px 12px 0}
+      .add-row1,.add-row2{flex-direction:column}
+      .btn-add{width:100%}
+      .card-fields{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h1>Leads<span>Track</span></h1>
+        <div class="header-sub">Your full CRM — LinkedIn, Instagram & Facebook</div>
+      </div>
+    </div>
+    <div class="sheets-badge" id="sheetsBadge" onclick="toggleConfig()">
+      <div class="dot" id="statusDot"></div>
+      <span id="sheetsStatus">Connect Google Sheets</span>
+    </div>
+  </div>
+</header>
+
+<!-- NOTIFICATIONS -->
+<div class="notif-banner" id="notifBanner">
+  <div class="notif-header">
+    <div class="notif-title">🔔 Follow-Up Reminders</div>
+    <button class="notif-dismiss" onclick="dismissNotifs()">Dismiss all</button>
+  </div>
+  <div class="notif-cards" id="notifCards"></div>
+</div>
+
+<!-- TABS -->
+<div class="main-tabs">
+  <div class="main-tab active" id="tab-all" onclick="switchTab('all')">📋 All Prospects <span class="tab-badge" id="alertBadge"></span></div>
+  <div class="main-tab" id="tab-niche" onclick="switchTab('niche')">🏷️ By Expertise</div>
+</div>
+
+<main>
+
+  <!-- CONFIG -->
+  <div class="config-panel" id="configPanel">
+    <h3>🔗 Connect to Your Google Sheet</h3>
+    <div class="step"><div class="step-num">1</div><div>Open your sheet → <strong>Extensions → Apps Script</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div>Delete everything → paste the script below → <strong>Save (💾)</strong></div></div>
+    <div class="script-box">
+      <pre id="scriptCode">function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getActiveSheet();
+    var data = JSON.parse(e.postData.contents);
+
+    if (sheet.getLastRow() === 0) setupSheet(sheet);
+
+    // Duplicate check by name
+    var lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      var names = sheet.getRange(2,1,lastRow-1,1).getValues();
+      for (var i=0; i<names.length; i++) {
+        if (names[i][0].toString().toLowerCase().trim()===data.name.toLowerCase().trim()) {
+          return ContentService.createTextOutput(JSON.stringify({success:false,duplicate:true})).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    // Columns: A=Name, B=Job Title, C=Niche,
+    // D=Source, E=Profile URL, F=Status,
+    // G=Date of Engagement, H=Follow Up 1,
+    // I=Final Follow Up, J=Outcome,
+    // K=DM Message, L=Notes
+    var newRow = sheet.getLastRow() + 1;
+    sheet.appendRow([
+      data.name||'', data.jobTitle||'', data.niche||'',
+      data.source||'LinkedIn', data.url||'',
+      data.status||'Lead Added', data.dateEngaged||'',
+      data.followUp1||'', data.finalFollowUp||'',
+      data.outcome||'', data.dm||'', data.notes||''
+    ]);
+
+    formatRow(sheet, newRow, data.source);
+    formatWholeSheet(sheet);
+
+    return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({success:false,error:err.toString()})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function setupSheet(sheet) {
+  var headers = ['Name','Job Title','Niche / Expertise','Source',
+    'Profile URL','Status','Date of Engagement',
+    'Follow Up 1','Final Follow Up','Outcome','DM Message','Notes'];
+  sheet.appendRow(headers);
+  var hr = sheet.getRange(1,1,1,12);
+  hr.setBackground('#1a1a2e').setFontColor('#ffffff')
+    .setFontWeight('bold').setFontSize(11)
+    .setHorizontalAlignment('center');
+  sheet.setFrozenRows(1);
+  setColumnWidths(sheet);
+}
+
+function setColumnWidths(sheet) {
+  var widths = [160,140,160,110,260,130,140,120,120,130,280,250];
+  for (var i=0; i<widths.length; i++) sheet.setColumnWidth(i+1, widths[i]);
+}
+
+function formatRow(sheet, rowNum, source) {
+  var range = sheet.getRange(rowNum,1,1,12);
+  var bgColor='#ffffff', accentColor='#999999';
+  if (source==='LinkedIn')  { bgColor='#e8f4fb'; accentColor='#0077b5'; }
+  if (source==='Instagram') { bgColor='#fce4ec'; accentColor='#e1306c'; }
+  if (source==='Facebook')  { bgColor='#ede9fe'; accentColor='#7c3aed'; }
+  if (rowNum%2===0) bgColor=darken(bgColor,12);
+
+  range.setBackground(bgColor).setFontSize(10).setVerticalAlignment('middle');
+  sheet.getRange(rowNum,1).setFontWeight('bold').setFontSize(11);
+  sheet.getRange(rowNum,4).setBackground(accentColor).setFontColor('#ffffff')
+    .setFontWeight('bold').setHorizontalAlignment('center');
+  sheet.getRange(rowNum,5).setFontColor('#0077b5');
+  sheet.getRange(rowNum,11).setWrap(true);
+  sheet.getRange(rowNum,12).setWrap(true);
+  range.setBorder(true,true,true,true,false,false,'#cccccc',SpreadsheetApp.BorderStyle.SOLID);
+}
+
+function formatWholeSheet(sheet) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+  var sources = sheet.getRange(2,4,lastRow-1,1).getValues();
+  for (var i=0; i<sources.length; i++) formatRow(sheet, i+2, sources[i][0]);
+}
+
+function darken(hex,amount) {
+  var r=parseInt(hex.slice(1,3),16);
+  var g=parseInt(hex.slice(3,5),16);
+  var b=parseInt(hex.slice(5,7),16);
+  r=Math.max(0,r-amount); g=Math.max(0,g-amount); b=Math.max(0,b-amount);
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}</pre>
+      <button class="copy-btn" onclick="copyScript()">Copy</button>
+    </div>
+    <div class="step"><div class="step-num">3</div><div>Click <strong>Deploy → New Deployment → Web App</strong> → access: <code>Anyone</code> → Deploy</div></div>
+    <div class="step"><div class="step-num">4</div><div>Copy the <strong>Web App URL</strong> and paste below</div></div>
+    <div class="config-input-row">
+      <input class="config-input" id="webhookUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec"/>
+      <button class="btn-save-config" onclick="saveWebhook()">Save & Connect</button>
+    </div>
+    <div class="config-msg" id="configMsg"></div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-card">
+    <div class="add-label">Add New Prospect</div>
+    <div class="add-row1">
+      <input class="url-input" id="urlInput" placeholder="Paste profile URL (LinkedIn / Instagram / Facebook)..." onkeydown="if(event.key==='Enter')addProspect()" oninput="onUrlInput(this.value)"/>
+      <div class="source-detected" id="sourceDetected">🔗 Auto-detect</div>
+    </div>
+    <div class="add-row2">
+      <input class="field-input" id="nameInput" placeholder="Full name (auto-filled from URL)" style="flex:1"/>
+      <input class="field-input" id="titleInput" placeholder="Job title (e.g. Business Coach)" style="flex:1"/>
+      <input class="field-input" id="nicheInput" placeholder="Niche (e.g. Mindset)" style="flex:1"/>
+      <button class="btn-add" onclick="addProspect()">+ Add</button>
+    </div>
+    <div class="msg" id="addMsg" style="display:none"></div>
+  </div>
+
+  <!-- ALL VIEW -->
+  <div id="allView">
+    <div class="stats" id="statsEl" style="display:none"></div>
+    <div class="filter-row" id="srcFilterRow" style="display:none">
+      <span class="filter-label">Source:</span>
+      <button class="src-pill active-all" id="srcAll" onclick="setSrc('All')">All</button>
+      <button class="src-pill" id="srcLI" onclick="setSrc('LinkedIn')">💼 LinkedIn</button>
+      <button class="src-pill" id="srcIG" onclick="setSrc('Instagram')">📸 Instagram</button>
+      <button class="src-pill" id="srcFB" onclick="setSrc('Facebook')">👥 Facebook</button>
+    </div>
+    <div class="filter-row" id="statusFilterRow" style="display:none">
+      <span class="filter-label">Status:</span>
+      <div id="statusFilterBtns"></div>
+    </div>
+    <div class="cards" id="cardsEl"></div>
+  </div>
+
+  <!-- NICHE VIEW -->
+  <div class="niche-view" id="nicheView">
+    <div id="nicheContent"></div>
+  </div>
+
+</main>
+
+<script>
+const SK='lt_v6', WK='lt_wh', NOTIF_KEY='lt_notif_dismissed';
+
+const STATUSES=[
+  {val:'Lead Added',    label:'📋 Lead Added',    cls:'s-added'},
+  {val:'Engaged',       label:'💬 Engaged',        cls:'s-engaged'},
+  {val:'Message Sent',  label:'✉️ Message Sent',   cls:'s-sent'},
+  {val:'Contact Later', label:'📅 Contact Later',  cls:'s-later'},
+];
+
+const OUTCOMES=[
+  {val:'',               label:'— Select Outcome —'},
+  {val:'Call Booked',    label:'📞 Call Booked'},
+  {val:'Not Interested', label:'❌ Not Interested'},
+  {val:'No Response',    label:'👻 No Response'},
+  {val:'Keep Nurturing', label:'🔄 Keep Nurturing'},
+];
+
+const REPLY_OPTS=['','Yes','Call Booked','No'];
+const REPLY_CLS={'':'reply-none','Yes':'reply-yes','Call Booked':'reply-call','No':'reply-no'};
+const REPLY_LBL={'':'No Reply Yet','Yes':'Replied ✓','Call Booked':'Call Booked 📞','No':'No Response'};
+const SRC_ICON={'LinkedIn':'💼','Instagram':'📸','Facebook':'👥'};
+const SRC_CLS={'LinkedIn':'src-li','Instagram':'src-ig','Facebook':'src-fb'};
+
+let prospects=JSON.parse(localStorage.getItem(SK)||'[]');
+let webhook=localStorage.getItem(WK)||'';
+let activeTab='all', srcFilter='All', statusFilter='All', ed=null;
+let dismissedNotifs=JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]');
+
+window.onload=()=>{
+  if(webhook){document.getElementById('webhookUrl').value=webhook;updateBadge(true);}
+  requestNotificationPermission();
+  render();
+  checkReminders();
+  setInterval(checkReminders,60*60*1000); // check every hour
+};
+
+const save=()=>localStorage.setItem(SK,JSON.stringify(prospects));
+
+function daysBetween(dateStr){
+  if(!dateStr)return null;
+  const parts=dateStr.split('/');
+  if(parts.length!==3)return null;
+  const d=new Date(parts[2],parts[1]-1,parts[0]);
+  const now=new Date();
+  now.setHours(0,0,0,0);
+  return Math.floor((now-d)/(1000*60*60*24));
+}
+
+function today(){return new Date().toLocaleDateString('en-GB');}
+
+function detectSource(url){
+  if(url.includes('linkedin.com'))return 'LinkedIn';
+  if(url.includes('instagram.com'))return 'Instagram';
+  if(url.includes('facebook.com'))return 'Facebook';
+  return null;
+}
+
+function extractName(input){
+  if(!input.includes('http')){
+    return input.trim().split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  }
+  try{
+    const url=input.split('?')[0].replace(/\/$/,'');
+    let slug='';
+    if(url.includes('/in/'))slug=url.split('/in/')[1];
+    else if(url.includes('instagram.com/'))slug=url.split('instagram.com/')[1];
+    else if(url.includes('facebook.com/'))slug=url.split('facebook.com/')[1];
+    else slug=url.split('/').pop();
+    if(!slug)return'Unknown';
+    return slug.replace(/\./g,'-').split('-').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  }catch{return'Unknown';}
+}
+
+function onUrlInput(val){
+  updateSourceBadge(val);
+  if(val.includes('http')){
+    const name=extractName(val);
+    const nameEl=document.getElementById('nameInput');
+    if(!nameEl.value||nameEl.dataset.autoFilled==='true'){
+      nameEl.value=name;nameEl.dataset.autoFilled='true';
+    }
+  }
+}
+
+function updateSourceBadge(val){
+  const el=document.getElementById('sourceDetected');
+  const src=detectSource(val);
+  el.className='source-detected';
+  if(src==='LinkedIn'){el.classList.add('li');el.textContent='💼 LinkedIn';}
+  else if(src==='Instagram'){el.classList.add('ig');el.textContent='📸 Instagram';}
+  else if(src==='Facebook'){el.classList.add('fb');el.textContent='👥 Facebook';}
+  else el.textContent='🔗 Auto-detect';
+}
+
+function showMsg(text,type,ms=4000){
+  const el=document.getElementById('addMsg');
+  el.textContent=text;el.className=`msg ${type}`;el.style.display='block';
+  if(ms)setTimeout(()=>{el.style.display='none';},ms);
+}
+
+async function syncToSheet(p){
+  if(!webhook)return;
+  showMsg('⟳ Syncing to Google Sheet...','info',0);
+  try{
+    await fetch(webhook,{
+      method:'POST',mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:p.name,jobTitle:p.jobTitle,niche:p.niche,
+        source:p.source,url:p.url,status:p.status,
+        dateEngaged:p.dateEngaged,followUp1:p.followUp1,
+        finalFollowUp:p.finalFollowUp,outcome:p.outcome,
+        dm:p.dm,notes:p.notes
+      })
+    });
+    showMsg('✓ Added to your Google Sheet','ok');
+  }catch{showMsg('⚠ Saved locally — could not sync','err');}
+}
+
+function addProspect(){
+  const urlVal=document.getElementById('urlInput').value.trim();
+  const nameVal=document.getElementById('nameInput').value.trim();
+  const titleVal=document.getElementById('titleInput').value.trim();
+  const nicheVal=document.getElementById('nicheInput').value.trim();
+  if(!urlVal&&!nameVal){showMsg('Please paste a URL or enter a name','err');return;}
+  const src=detectSource(urlVal)||'LinkedIn';
+  const name=nameVal||extractName(urlVal);
+  const url=urlVal.includes('http')?urlVal.split('?')[0].replace(/\/$/,''):'';
+  if(prospects.find(p=>(p.url&&p.url===url&&url)||p.name.toLowerCase()===name.toLowerCase())){
+    showMsg(`"${name}" is already in your tracker`,'err');return;
+  }
+  const p={
+    id:Date.now(),url,name,jobTitle:titleVal,niche:nicheVal,source:src,
+    status:'Lead Added',dateEngaged:today(),
+    followUp1:'',finalFollowUp:'',outcome:'',dm:'',notes:''
+  };
+  prospects.unshift(p);save();syncToSheet(p);
+  document.getElementById('urlInput').value='';
+  document.getElementById('nameInput').value='';
+  document.getElementById('nameInput').dataset.autoFilled='false';
+  document.getElementById('titleInput').value='';
+  document.getElementById('nicheInput').value='';
+  updateSourceBadge('');
+  srcFilter='All';statusFilter='All';render();checkReminders();
+}
+
+function upd(id,field,val){
+  prospects=prospects.map(p=>p.id===id?{...p,[field]:val}:p);
+  save();ed=null;render();checkReminders();
+}
+
+function markFU(id,field){upd(id,field,today());}
+function delP(id){prospects=prospects.filter(p=>p.id!==id);save();render();checkReminders();}
+function toggleConfig(){document.getElementById('configPanel').classList.toggle('open');}
+
+function saveWebhook(){
+  const val=document.getElementById('webhookUrl').value.trim();
+  const msg=document.getElementById('configMsg');
+  if(!val.includes('script.google.com')){msg.style.color='var(--red)';msg.textContent='That URL looks wrong.';return;}
+  webhook=val;localStorage.setItem(WK,val);updateBadge(true);
+  msg.style.color='var(--green)';msg.textContent='✓ Connected!';
+  setTimeout(()=>document.getElementById('configPanel').classList.remove('open'),2200);
+}
+
+function updateBadge(on){
+  document.getElementById('sheetsBadge').classList.toggle('connected',on);
+  document.getElementById('sheetsStatus').textContent=on?'Sheets Connected ✓':'Connect Google Sheets';
+  const d=document.getElementById('statusDot');
+  d.style.background=on?'#10b981':'';d.style.boxShadow=on?'0 0 6px #10b981':'';
+}
+
+function copyScript(){
+  navigator.clipboard.writeText(document.getElementById('scriptCode').textContent).then(()=>{
+    const b=document.querySelector('.copy-btn');
+    b.textContent='Copied!';b.style.background='#10b981';b.style.color='#fff';
+    setTimeout(()=>{b.textContent='Copy';b.style.background='';b.style.color='';},2000);
+  });
+}
+
+function requestNotificationPermission(){
+  if('Notification'in window&&Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+
+function sendBrowserNotif(title,body){
+  if('Notification'in window&&Notification.permission==='granted'){
+    new Notification(title,{body,icon:'https://cdn-icons-png.flaticon.com/512/2462/2462719.png'});
+  }
+}
+
+// REMINDER LOGIC
+function checkReminders(){
+  const reminders=[];
+  prospects.forEach(p=>{
+    const key=`${p.id}`;
+    if(dismissedNotifs.includes(key))return;
+
+    // After Message Sent → 3 days → follow up 1 reminder
+    if(p.status==='Message Sent'&&!p.followUp1){
+      const days=daysBetween(p.dateEngaged);
+      if(days>=3){
+        reminders.push({
+          id:p.id,name:p.name,
+          msg:`Message sent ${days} day${days!==1?'s':''} ago — time for Follow Up 1!`,
+          urgent:days>=5,field:'followUp1'
+        });
+      }
+    }
+
+    // After Follow Up 1 → 5 days → final follow up reminder
+    if(p.followUp1&&!p.finalFollowUp&&!p.outcome){
+      const days=daysBetween(p.followUp1);
+      if(days>=5){
+        reminders.push({
+          id:p.id,name:p.name,
+          msg:`Follow Up 1 was ${days} day${days!==1?'s':''} ago — time for Final Follow Up!`,
+          urgent:days>=7,field:'finalFollowUp'
+        });
+      }
+    }
+
+    // After Final Follow Up → 5 days → mark outcome reminder
+    if(p.finalFollowUp&&!p.outcome){
+      const days=daysBetween(p.finalFollowUp);
+      if(days>=5){
+        reminders.push({
+          id:p.id,name:p.name,
+          msg:`Final follow up was ${days} days ago — please mark an outcome!`,
+          urgent:true,field:'outcome'
+        });
+      }
+    }
+
+    // Contact Later → remind after 7 days
+    if(p.status==='Contact Later'){
+      const days=daysBetween(p.dateEngaged);
+      if(days>=7){
+        reminders.push({
+          id:p.id,name:p.name,
+          msg:`Marked "Contact Later" ${days} days ago — time to reach out!`,
+          urgent:days>=14,field:'status'
+        });
+      }
+    }
+  });
+
+  const banner=document.getElementById('notifBanner');
+  const cards=document.getElementById('notifCards');
+  const badge=document.getElementById('alertBadge');
+
+  if(reminders.length===0){
+    banner.classList.remove('show');
+    badge.classList.remove('show');
+    return;
+  }
+
+  banner.classList.add('show');
+  badge.textContent=reminders.length;
+  badge.classList.add('show');
+
+  cards.innerHTML=reminders.map(r=>`
+    <div class="notif-card ${r.urgent?'urgent':''}">
+      <div>
+        <span class="notif-name">${r.name}</span>
+        <span class="notif-msg"> — ${r.msg}</span>
+      </div>
+      <button class="notif-action ${r.urgent?'urgent':''}" onclick="scrollToCard(${r.id})">View</button>
+    </div>`).join('');
+
+  // Send browser notification for urgent ones
+  reminders.filter(r=>r.urgent).forEach(r=>{
+    sendBrowserNotif(`⚠️ ${r.name}`,r.msg);
+  });
+}
+
+function scrollToCard(id){
+  switchTab('all');
+  setTimeout(()=>{
+    const el=document.getElementById(`card_${id}`);
+    if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='2px solid var(--amber)';setTimeout(()=>{el.style.outline='';},3000);}
+  },100);
+}
+
+function dismissNotifs(){
+  prospects.forEach(p=>{ if(!dismissedNotifs.includes(`${p.id}`))dismissedNotifs.push(`${p.id}`); });
+  localStorage.setItem(NOTIF_KEY,JSON.stringify(dismissedNotifs));
+  document.getElementById('notifBanner').classList.remove('show');
+  document.getElementById('alertBadge').classList.remove('show');
+}
+
+function switchTab(tab){
+  activeTab=tab;
+  document.getElementById('tab-all').classList.toggle('active',tab==='all');
+  document.getElementById('tab-niche').classList.toggle('active',tab==='niche');
+  document.getElementById('allView').style.display=tab==='all'?'block':'none';
+  document.getElementById('nicheView').classList.toggle('visible',tab==='niche');
+  render();
+}
+
+function setSrc(s){
+  srcFilter=s;
+  ['All','LinkedIn','Instagram','Facebook'].forEach(x=>{
+    const m={'All':'srcAll','LinkedIn':'srcLI','Instagram':'srcIG','Facebook':'srcFB'};
+    const el=document.getElementById(m[x]);if(!el)return;
+    el.className='src-pill';
+    if(s===x){
+      if(x==='All')el.classList.add('active-all');
+      else if(x==='LinkedIn')el.classList.add('active-li');
+      else if(x==='Instagram')el.classList.add('active-ig');
+      else if(x==='Facebook')el.classList.add('active-fb');
+    }
+  });
+  render();
+}
+
+function setStatusF(f){statusFilter=f;render();}
+
+function getFiltered(){
+  let list=[...prospects];
+  if(srcFilter!=='All')list=list.filter(p=>p.source===srcFilter);
+  if(statusFilter==='All')return list;
+  if(statusFilter==='Needs Follow Up')return list.filter(p=>p.status==='Message Sent'&&!p.followUp1&&daysBetween(p.dateEngaged)>=3);
+  return list.filter(p=>p.status===statusFilter);
+}
+
+function render(){
+  if(activeTab==='all')renderAll();
+  else renderNiche();
+}
+
+function renderAll(){
+  // Stats
+  const sEl=document.getElementById('statsEl');
+  if(!prospects.length){sEl.style.display='none';}
+  else{
+    sEl.style.display='flex';
+    sEl.innerHTML=[
+      {l:'Total',v:prospects.length,c:'#6366f1'},
+      {l:'LinkedIn',v:prospects.filter(p=>p.source==='LinkedIn').length,c:'#0077b5'},
+      {l:'Instagram',v:prospects.filter(p=>p.source==='Instagram').length,c:'#e1306c'},
+      {l:'Facebook',v:prospects.filter(p=>p.source==='Facebook').length,c:'#7c3aed'},
+      {l:'Replied',v:prospects.filter(p=>p.replyStatus==='Yes').length,c:'#10b981'},
+      {l:'Call Booked',v:prospects.filter(p=>p.outcome==='Call Booked').length,c:'#ec4899'},
+    ].map(s=>`<div class="stat"><span class="stat-val" style="color:${s.c}">${s.v}</span><span class="stat-lbl">${s.l}</span></div>`).join('');
+  }
+
+  // Source filter
+  document.getElementById('srcFilterRow').style.display=prospects.length?'flex':'none';
+
+  // Status filter
+  const sfEl=document.getElementById('statusFilterRow');
+  const sfBtns=document.getElementById('statusFilterBtns');
+  if(!prospects.length){sfEl.style.display='none';}
+  else{
+    sfEl.style.display='flex';
+    const tabs=['All',...STATUSES.map(s=>s.val),'Needs Follow Up'];
+    sfBtns.innerHTML=tabs.map(t=>`<button class="fbtn ${statusFilter===t?'active':''}" onclick="setStatusF('${t}')" style="margin-right:5px">${t}</button>`).join('');
+  }
+
+  // Cards
+  const el=document.getElementById('cardsEl');
+  const list=getFiltered();
+  if(!prospects.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🔗</div><h3>No prospects yet</h3><p>Paste a profile URL above to start tracking</p></div>`;
+    return;
+  }
+  if(!list.length){
+    el.innerHTML=`<div class="empty"><p>No prospects match this filter</p></div>`;
+    return;
+  }
+  el.innerHTML=list.map(p=>cardHtml(p)).join('');
+  if(ed){const inp=document.getElementById(`ie_${ed.id}_${ed.field}`);if(inp)inp.focus();}
+}
+
+function renderNiche(){
+  const el=document.getElementById('nicheContent');
+  if(!prospects.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🏷️</div><h3>No prospects yet</h3></div>`;
+    return;
+  }
+  const groups={};
+  prospects.forEach(p=>{
+    const key=p.niche&&p.niche.trim()?p.niche.trim():'Unassigned';
+    if(!groups[key])groups[key]=[];
+    groups[key].push(p);
+  });
+  const keys=Object.keys(groups).sort((a,b)=>{
+    if(a==='Unassigned')return 1;if(b==='Unassigned')return -1;
+    return b.length-a.length;
+  });
+  el.innerHTML=keys.map(niche=>{
+    const list=groups[niche];
+    return`<div class="niche-group">
+      <div class="niche-header">
+        <span class="niche-title">${niche}</span>
+        <span class="niche-count">${list.length} prospect${list.length!==1?'s':''}</span>
+      </div>
+      <div>${list.map(p=>`
+        <div class="niche-mini-card src-${p.source||'LinkedIn'}">
+          <div class="niche-mini-left">
+            <div class="niche-avatar-sm">${p.name[0]?.toUpperCase()||'?'}</div>
+            <div>
+              <div class="niche-name">${p.name}</div>
+              <div class="niche-meta">${p.jobTitle||''}${p.jobTitle&&p.source?' · ':''}<span class="source-badge ${SRC_CLS[p.source]||''}">${SRC_ICON[p.source]||''} ${p.source||''}</span></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:11px;color:var(--text3)">${p.status||''}</span>
+            ${p.outcome?`<span class="reply-badge reply-call">${p.outcome}</span>`:''}
+          </div>
+        </div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function ie(id,field,val,cls,ph=''){
+  return`<div class="ie-wrap">
+    <input class="ie ${cls}" id="ie_${id}_${field}" value="${(val||'').replace(/"/g,'&quot;')}" placeholder="${ph}"
+      onkeydown="if(event.key==='Enter')upd(${id},'${field}',this.value)"/>
+    <button class="btn-ok" onclick="upd(${id},'${field}',document.getElementById('ie_${id}_${field}').value)">✓</button>
+    <button class="btn-cx" onclick="cancelEd()">✕</button>
+  </div>`;
+}
+
+function cardHtml(p){
+  const isEd=f=>ed?.id===p.id&&ed?.field===f;
+  const profileLabel=p.url?p.url.replace('https://www.','').replace('www.','').substring(0,55):'';
+
+  const needsFU1=p.status==='Message Sent'&&!p.followUp1&&(daysBetween(p.dateEngaged)||0)>=3;
+  const needsFUFinal=p.followUp1&&!p.finalFollowUp&&!p.outcome&&(daysBetween(p.followUp1)||0)>=5;
+
+  const nameHtml=isEd('name')?ie(p.id,'name',p.name,'sm')
+    :`<span class="person-name" onclick="startEd(${p.id},'name')">${p.name} ✏️</span>`;
+  const titleHtml=isEd('jobTitle')?ie(p.id,'jobTitle',p.jobTitle,'md','Job title...')
+    :`<div class="person-title" onclick="startEd(${p.id},'jobTitle')">${p.jobTitle||'+ add job title'}</div>`;
+  const nicheHtml=isEd('niche')?ie(p.id,'niche',p.niche,'md','Niche...')
+    :`<div class="person-niche" onclick="startEd(${p.id},'niche')">${p.niche||'+ add niche'}</div>`;
+
+  const statusOpts=STATUSES.map(s=>`<option value="${s.val}" ${p.status===s.val?'selected':''}>${s.label}</option>`).join('');
+  const statusCls=STATUSES.find(s=>s.val===p.status)?.cls||'s-added';
+
+  const outcomeOpts=OUTCOMES.map(o=>`<option value="${o.val}" ${p.outcome===o.val?'selected':''}>${o.label}</option>`).join('');
+  const outcomeCls=p.outcome==='Call Booked'?'o-call':p.outcome==='Not Interested'?'o-notint':p.outcome==='No Response'?'o-noresp':p.outcome==='Keep Nurturing'?'o-nurture':'';
+
+  const fu1Html=p.followUp1
+    ?`<button class="fu-btn done">✓ Follow Up 1: ${p.followUp1}</button>`
+    :`<button class="fu-btn ${needsFU1?'overdue':''}" onclick="markFU(${p.id},'followUp1')">${needsFU1?'🔴':'📅'} Mark Follow Up 1 Sent</button>`;
+
+  const fuFinalHtml=p.finalFollowUp
+    ?`<button class="fu-btn done">✓ Final Follow Up: ${p.finalFollowUp}</button>`
+    :`<button class="fu-btn ${needsFUFinal?'overdue':''}" onclick="markFU(${p.id},'finalFollowUp')">${needsFUFinal?'🔴':'📅'} Mark Final Follow Up Sent</button>`;
+
+  const dmHtml=isEd('dm')
+    ?`<div class="area-wrap"><textarea class="ie-area" rows="3" id="ie_${p.id}_dm">${p.dm||''}</textarea><div class="ie-actions"><button class="btn-ok" onclick="upd(${p.id},'dm',document.getElementById('ie_${p.id}_dm').value)">Save</button><button class="btn-cx" onclick="cancelEd()">✕</button></div></div>`
+    :`<div class="dm-text ${p.dm?'has-val':''}" onclick="startEd(${p.id},'dm')">${p.dm||'📝 Add DM message...'}</div>`;
+
+  const noteHtml=isEd('notes')
+    ?`<div class="area-wrap"><textarea class="ie-area" rows="2" id="ie_${p.id}_notes">${p.notes||''}</textarea><div class="ie-actions"><button class="btn-ok" onclick="upd(${p.id},'notes',document.getElementById('ie_${p.id}_notes').value)">Save</button><button class="btn-cx" onclick="cancelEd()">✕</button></div></div>`
+    :`<div class="note-display ${p.notes?'has-val':''}" onclick="startEd(${p.id},'notes')">${p.notes||'📝 Add note...'}</div>`;
+
+  return`
+  <div class="card src-${p.source||'LinkedIn'}" id="card_${p.id}">
+    <div class="card-top">
+      <div class="person-row">
+        <div class="avatar">${p.name[0]?.toUpperCase()||'?'}</div>
+        <div class="person-info">
+          ${nameHtml}
+          ${titleHtml}
+          ${nicheHtml}
+          ${p.url?`<a class="profile-link" href="${p.url}" target="_blank">🔗 ${profileLabel}</a>`:''}
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="source-badge ${SRC_CLS[p.source]||'src-li'}">${SRC_ICON[p.source]||'💼'} ${p.source||'LinkedIn'}</span>
+        <span class="card-date">📅 ${p.dateEngaged}</span>
+        <select class="status-select ${statusCls}" onchange="upd(${p.id},'status',this.value)">${statusOpts}</select>
+        <button class="btn-del" onclick="delP(${p.id})">✕</button>
+      </div>
+    </div>
+
+    <div class="card-fields">
+      <div>
+        <div class="section-lbl">DM Message</div>
+        ${dmHtml}
+      </div>
+      <div>
+        <div class="section-lbl">Notes</div>
+        ${noteHtml}
+      </div>
+    </div>
+
+    <div class="fu-row">${fu1Html}${fuFinalHtml}</div>
+
+    ${p.finalFollowUp?`
+    <div style="margin-top:8px">
+      <div class="section-lbl">Outcome after Final Follow Up</div>
+      <select class="outcome-select ${outcomeCls}" onchange="upd(${p.id},'outcome',this.value)">${outcomeOpts}</select>
+    </div>`:''}
+  </div>`;
+}
+
+function startEd(id,field){ed={id,field};render();}
+function cancelEd(){ed=null;render();}
+</script>
+</body>
+</html>
