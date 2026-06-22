@@ -448,7 +448,7 @@ let activeTab='all', srcFilter='All', statusFilter='All', ed=null;
 let dismissedNotifs=JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]');
 
 window.onload=()=>{
-  if(webhook){document.getElementById('webhookUrl').value=webhook;updateBadge(true);}
+  if(webhook){document.getElementById('webhookUrl').value=webhook;updateBadge(true);loadFromSheet();}
   requestNotificationPermission();
   render();
   checkReminders();
@@ -588,6 +588,38 @@ function updateBadge(on){
   document.getElementById('sheetsStatus').textContent=on?'Sheets Connected ✓':'Connect Google Sheets';
   const d=document.getElementById('statusDot');
   d.style.background=on?'#10b981':'';d.style.boxShadow=on?'0 0 6px #10b981':'';
+}
+
+async function loadFromSheet(){
+  if(!webhook) return;
+  try{
+    const res = await fetch(webhook);
+    const data = await res.json();
+    if(!data.success || !data.leads) return;
+
+    const existingNames = prospects.map(p=>p.name.toLowerCase().trim());
+    data.leads.forEach(sheetLead=>{
+      const nameKey = (sheetLead.name||'').toLowerCase().trim();
+      if(!nameKey) return;
+      if(existingNames.indexOf(nameKey)===-1){
+        prospects.push({
+          id: 'sheet-'+nameKey.replace(/\s+/g,'-')+'-'+Date.now()+Math.random(),
+          url: sheetLead.url||'',
+          name: sheetLead.name,
+          source: sheetLead.source||'LinkedIn',
+          status: sheetLead.status||'Lead Added',
+          dateEngaged: sheetLead.dateEngaged||'',
+          followUp1: sheetLead.followUp1||'',
+          finalFollowUp: sheetLead.followUp2||'',
+          outcome: sheetLead.outcome||'',
+          dm:'', notes:''
+        });
+        existingNames.push(nameKey);
+      }
+    });
+    save();
+    render();
+  } catch(e){ console.log('Could not load from sheet:', e); }
 }
 
 function copyScript(){
