@@ -245,12 +245,25 @@
         <div class="header-sub">Your full CRM — LinkedIn, Instagram & Facebook</div>
       </div>
     </div>
-    <div class="sheets-badge" id="sheetsBadge" onclick="toggleConfig()">
-      <div class="dot" id="statusDot"></div>
-      <span id="sheetsStatus">Connect Google Sheets</span>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="sheets-badge" id="sheetsBadge" onclick="toggleConfig()">
+        <div class="dot" id="statusDot"></div>
+        <span id="sheetsStatus">Connect Google Sheets</span>
+      </div>
+      <button id="syncAllBtn" onclick="syncAllToSheet()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:'Outfit',sans-serif;">📤 Sync All</button>
     </div>
   </div>
 </header>
+
+<div id="syncAllProgress" style="display:none;max-width:1000px;margin:14px auto 0;padding:0 20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;">
+    <div id="syncAllTitle" style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;">Syncing...</div>
+    <div style="background:var(--bg);border-radius:10px;height:6px;overflow:hidden;margin-bottom:6px;">
+      <div id="syncAllBar" style="height:100%;background:var(--accent);border-radius:10px;width:0%;transition:width .3s;"></div>
+    </div>
+    <div id="syncAllStatus" style="font-size:11px;color:var(--text3);">0 of 0 synced...</div>
+  </div>
+</div>
 
 <!-- NOTIFICATIONS -->
 <div class="notif-banner" id="notifBanner">
@@ -588,6 +601,74 @@ function updateBadge(on){
   document.getElementById('sheetsStatus').textContent=on?'Sheets Connected ✓':'Connect Google Sheets';
   const d=document.getElementById('statusDot');
   d.style.background=on?'#10b981':'';d.style.boxShadow=on?'0 0 6px #10b981':'';
+}
+
+async function syncAllToSheet(){
+  if(!webhook){
+    toggleConfig();
+    showMsg('⚠ Please connect your Google Sheet first, then click Sync All again.','err');
+    return;
+  }
+  if(!prospects.length){
+    alert('No prospects in your tracker yet!');
+    return;
+  }
+
+  const btn = document.getElementById('syncAllBtn');
+  const progress = document.getElementById('syncAllProgress');
+  const bar = document.getElementById('syncAllBar');
+  const status = document.getElementById('syncAllStatus');
+  const title = document.getElementById('syncAllTitle');
+
+  progress.style.display = 'block';
+  btn.textContent = '⟳ Syncing...';
+  btn.disabled = true;
+
+  const total = prospects.length;
+  let done = 0, failed = 0;
+
+  title.textContent = 'Syncing ' + total + ' prospects to your Google Sheet...';
+
+  for(let i = 0; i < prospects.length; i++){
+    const p = prospects[i];
+    status.textContent = 'Syncing ' + p.name + '... (' + (i+1) + ' of ' + total + ')';
+    bar.style.width = Math.round(((i+1)/total)*100) + '%';
+
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: p.name,
+          source: p.source || 'LinkedIn',
+          status: p.status || 'Lead Added',
+          dateEngaged: p.dateEngaged || '',
+          followUp1: p.followUp1 || '',
+          finalFollowUp: p.finalFollowUp || '',
+          outcome: p.outcome || '',
+          url: p.url || ''
+        })
+      });
+      done++;
+    } catch(e) { failed++; }
+
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  bar.style.width = '100%';
+  bar.style.background = failed > 0 ? 'var(--amber)' : 'var(--green)';
+
+  if(failed === 0){
+    title.textContent = '✅ All ' + done + ' prospects synced to your Google Sheet!';
+    status.textContent = 'Duplicates were automatically skipped by the sheet.';
+  } else {
+    title.textContent = '⚠ ' + done + ' synced, ' + failed + ' failed';
+    status.textContent = 'Check your connection and try again.';
+  }
+
+  btn.textContent = '📤 Sync All';
+  btn.disabled = false;
 }
 
 async function loadFromSheet(){
