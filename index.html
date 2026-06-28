@@ -456,7 +456,8 @@ const SRC_ICON={'LinkedIn':'💼','Instagram':'📸','Facebook':'👥'};
 const SRC_CLS={'LinkedIn':'src-li','Instagram':'src-ig','Facebook':'src-fb'};
 
 let prospects=JSON.parse(localStorage.getItem(SK)||'[]');
-let webhook=localStorage.getItem(WK)||'';
+let webhook=localStorage.getItem(WK)||'https://script.google.com/macros/s/AKfycbw-pDGip0FOScCtJ5CjNoMvDpKW-1S7QOKt7r3SDCJGUupDDZRoK45ZYZo80q5FHdhy/exec';
+if(!localStorage.getItem(WK)) localStorage.setItem(WK, webhook);
 let activeTab='all', srcFilter='All', statusFilter='All', ed=null;
 let dismissedNotifs=JSON.parse(localStorage.getItem(NOTIF_KEY)||'[]');
 
